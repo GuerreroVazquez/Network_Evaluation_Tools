@@ -118,7 +118,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=_DESCRIPTION)
     for name, help in arguments_descriptions.items():
         parser.add_argument(name, type=valid_infile, help=help)
-	for name, values in options_descriptions.items():
+    for name, values in options_descriptions.items():
         parser.add_argument(name, type=valid_infile, help=help)
     # Network performance score calculations (with null networks)
 

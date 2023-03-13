@@ -73,13 +73,15 @@ def construct_prop_kernel(network, alpha=None, m=-0.02935302, b=0.74842057, verb
 
     The resulting diffusion kernel can be used as a similarity matrix for various network analysis tasks,
     such as clustering, classification, or ranking.
-    :param network:
-    :param alpha:
+    :param network: NetworkX Graph object; The network for which to compute the diffusion kernel.
+    :param alpha: float, optional; The restart probability for the random walk. Default is 0.8.
     :param m:
     :param b:
     :param verbose:
     :param save_path:
-    :return:
+    :return: dataframe  ;  The diffusion kernel for the network, representing the pairwise
+     similarity between nodes based on their connectivity patterns.
+
     """
 
     network_Fo = pd.DataFrame(data=np.identity(len(network.nodes())), index=network.nodes(), columns=network.nodes())
@@ -88,6 +90,7 @@ def construct_prop_kernel(network, alpha=None, m=-0.02935302, b=0.74842057, verb
     else:
         alpha_val = alpha
     network_Fn = prop.closed_form_network_propagation(network, network_Fo, alpha_val, verbose=verbose)
+    # make sure that the input network is represented as a square, symmetric adjacency matrix
     network_Fn = network_Fn.ix[network_Fn.columns]
     if verbose:
         print 'Propagated network kernel constructed'
@@ -109,6 +112,11 @@ def global_var_initializer(global_net_kernel):
 # This method is faster for smaller networks, but still has a relatively large memory footprint
 # The parallel setup for this situation requires passing the network kernel to each individual thread
 def calculate_small_network_AUPRC(params):
+    """
+
+    :param params: list; parameters that the funtion will use, in order; node_set_name, node_set, p, n, bg, verbose
+    :return:
+    """
     node_set_name, node_set, p, n, bg, verbose = params[0], params[1], params[2], params[3], params[4], params[5]
     runtime = time.time()
     intersect = [nodes for nodes in node_set if nodes in kernel.index]
@@ -167,6 +175,28 @@ def calculate_large_network_AUPRC(params):
 
 # Wrapper to calculate AUPRC of multiple node sets' recovery for small networks (<250k edges)
 def small_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1, bg=None, verbose=True):
+    """
+
+    1. Divide the gene set into two subsets: a query set and a held-out set.
+    2. Compute the network propagation scores for all nodes in the network, using the propagation kernel and the gene expression values of the query set.
+    3. Evaluate the performance of the propagation scores in predicting the held-out gene set, using the AUPRC metric.
+    4. Randomly shuffle the query and held-out sets, and repeat steps 1-3.
+
+    :param net_kernel: Dataframe; The matrix that encodes the pairwise similarities or influences between the nodes
+    in the network, based on the connectivity patterns and the propagation parameters
+    :param genesets: Dictionary
+    with a set as value for each key that has the genes of interest by disease
+    :param genesets_p: list floats; The
+    calculated sub-sampling rates
+    :param n: int;  number of times to repeat the network propagation and evaluation
+    procedure for each gene set.  Typically, larger values of n lead to more accurate estimates of the AUPRC,
+    but also require more computational resources and time
+    :param cores:
+    :param bg: iterable object; background set of genes that are used to compute the null distribution of AUPRC scores.
+    :param verbose:
+
+    :return:
+    """
     # Construct params list
     if bg is None:
         bg_intersect = list(net_kernel.index)

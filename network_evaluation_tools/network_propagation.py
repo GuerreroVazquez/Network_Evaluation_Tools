@@ -25,6 +25,12 @@ def normalize_network(network, symmetric_norm=False):
 
 # Calculate optimal propagation coefficient (updated model)
 def calculate_alpha(network, m=-0.02935302, b=0.74842057):
+	"""
+	In the calculate_alpha function, on the other hand, the m and b values are obtained by fitting a linear model to
+	the empirical data on the size of the largest connected component of the network as a function of the fraction of
+	nodes or edges removed from the network. This relationship is used to estimate the Network Alpha value,
+	which measures the robustness of the network to perturbations. :param network: :param m: :param b: :return:
+	"""
 	log_edge_count = np.log10(len(network.edges()))
 	alpha_val = round(m*log_edge_count+b,3)
 	if alpha_val <=0:

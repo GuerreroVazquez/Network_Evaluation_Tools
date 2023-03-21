@@ -1,6 +1,7 @@
 #####################################################################
 # ---------- Node Set-Based Network Evaluation Functions ---------- #
 #####################################################################
+import math
 from multiprocessing import Pool
 from network_evaluation_tools import data_import_tools as dit
 from network_evaluation_tools import network_propagation as prop
@@ -376,6 +377,14 @@ def get_null_AUPRCs_table(wd, shuff_net_AUPRCs_fn, geneset_list=None):
 # Requires the AUPRCs calculated for the actual network in a pandas Series
 # Also requires the AUPRCs calculated for the same gene sets on the shuffled networks in a pandas DataFrame
 def calculate_network_performance_score(actual_net_AUPRCs, shuff_net_AUPRCs, verbose=True, save_path=None):
+    """
+
+    :param actual_net_AUPRCs: pandas Series
+    :param shuff_net_AUPRCs: pandas Series
+    :param verbose: Bool
+    :param save_path: string
+    :return:
+    """
     # Align data (only calculate for gene sets with full data on both actual networks and all shuffled networks)
     genesets = sorted(list(set(actual_net_AUPRCs.index).intersection(set(shuff_net_AUPRCs.index))),
                       key=lambda s: s.lower())
@@ -388,8 +397,10 @@ def calculate_network_performance_score(actual_net_AUPRCs, shuff_net_AUPRCs, ver
     AUPRC_null_MAD = abs(shuff_net_AUPRCs.subtract(AUPRC_null_median, axis=0)).median(axis=1)
     AUPRC_null_MAD_scaled = k * AUPRC_null_MAD
     AUPRC_ZNorm = (actual_net_AUPRCs - AUPRC_null_median).divide(AUPRC_null_MAD_scaled)
+    AUPRC_ZNorm = AUPRC_ZNorm.fillna(-1)
+
     if save_path is not None:
-        AUPRC_ZNorm.to_csv(save_path)
+        AUPRC_ZNorm.to_csv(save_path, header=False)
     if verbose:
         print 'AUPRC values z-normalized'
     return AUPRC_ZNorm
@@ -408,7 +419,7 @@ def calculate_network_performance_gain(actual_net_AUPRCs, shuff_net_AUPRCs, verb
     AUPRC_null_median = shuff_net_AUPRCs.median(axis=1)
     AUPRC_gain = (actual_net_AUPRCs - AUPRC_null_median).divide(AUPRC_null_median)
     if save_path is not None:
-        AUPRC_gain.to_csv(save_path)
+        AUPRC_gain.to_csv(save_path, header=False)
     if verbose:
         print 'AUPRC relative performance gain calculated'
     return AUPRC_gain

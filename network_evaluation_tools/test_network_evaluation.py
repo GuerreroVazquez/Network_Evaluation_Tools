@@ -107,7 +107,7 @@ def test_construct_table():
         pickle.dump(network_perf_gain, f)
 
 
-def test_rank():
+def test_rank_among_other_networks():
     with open('performance.pkl', 'rb') as f:
         network_performance = pickle.load(f)
     with open('gain.pkl', 'rb') as f:
@@ -140,7 +140,7 @@ def test_rank():
     network_summary = {}
     network_summary['Nodes'] = int(len(network.nodes()))
     network_summary['Edges'] = int(len(network.edges()))
-    network_summary['Avg Node Degree'] = np.mean(network.degree().values())
+    network_summary['Avg Node Degree'] = np.mean(dict(network.degree()).values())
     network_summary['Edge Density'] = 2 * network_summary['Edges'] / float(
         (network_summary['Nodes'] * (network_summary['Nodes'] - 1)))
     network_summary['Avg Network Performance Rank'] = network_performance_rankings.mean()

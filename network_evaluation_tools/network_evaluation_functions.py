@@ -17,7 +17,7 @@ import time
 
 # Shuffle network in degree-preserving manner
 # Input: network - networkx formatted network
-# For large networks this can be slow: may need to be sped up to prevent bottlenecking
+# For large networks this can be slow: may need to be sped up to prevent bottleneck
 def shuffle_network(network, max_tries_n=10, verbose=False):
     # Shuffle Network
     shuff_time = time.time()

@@ -1,3 +1,7 @@
+import networkx as nx
+import numpy as np
+import pandas as pd
+
 from network_evaluation_tools import data_import_tools as dit
 from network_evaluation_tools import network_evaluation_functions as nef
 from network_evaluation_tools import network_propagation as prop
@@ -36,6 +40,36 @@ def main(network_file='../Data/YoungvsOld_UP.csv', disease_file='../Data/DisGeNE
 
     for key, value in list(AUPRC_values.items()):
         print(key, value, [random[key] for random in null_AUPRCs], averages[key])
+
+
+def shuffle_network(network, alpha, genesets, genesets_p, n=30, cores=4):
+    null_AUPRCs = []
+    for i in range(10):
+        shuffNet = nef.shuffle_network(network, max_tries_n=10, verbose=True)
+        shuffNet_kernel = nef.construct_prop_kernel(shuffNet, alpha=alpha, verbose=False)
+        shuffNet_AUPRCs = nef.small_network_AUPRC_wrapper(shuffNet_kernel, genesets, genesets_p, n=n, cores=cores,
+                                                          verbose=False)
+        null_AUPRCs.append(shuffNet_AUPRCs)
+    null_AUPRCs_table = pd.concat(null_AUPRCs, axis=1)
+    null_AUPRCs_table.columns = ['shuffNet' + repr(i + 1) for i in range(len(null_AUPRCs))]
+    return null_AUPRCs_table
+
+def get_network_performance(network_name, AUPRC_values, null_AUPRCs_table):
+    network_performance = nef.calculate_network_performance_score(AUPRC_values, null_AUPRCs_table, verbose=True)
+    network_performance.name = network_name
+    network_perf_gain = nef.calculate_network_performance_gain(AUPRC_values, null_AUPRCs_table, verbose=True)
+    network_perf_gain.name = network_name
+    return network_performance, network_performance
+
+def evaluate_network(network_name, evaluating_network, genesets):
+    network = nx.read_gpickle(evaluating_network)
+    genesets_p = nef.calculate_p(network, genesets)
+    alpha = prop.calculate_alpha(network)
+    kernel = nef.construct_prop_kernel(network, alpha=alpha, verbose=True)
+    AUPRC_values = nef.small_network_AUPRC_wrapper(kernel, genesets, genesets_p, n=30, cores=1, verbose=True)
+    null_AUPRCs_table = shuffle_network(network=network, alpha=alpha, genesets=genesets, genesets_p=genesets_p)
+    return get_network_performance(network_name=network_name, AUPRC_values=AUPRC_values,
+                                   null_AUPRCs_table=null_AUPRCs_table)
 
 
 if __name__ == "__main__":

@@ -56,10 +56,13 @@ def calculate_p(network, nodesets, m=-0.18887257, b=0.64897403):
 
     network_nodes = [str(gene) for gene in network.nodes()]
     nodesets_p = {}
+    # just the intersection
     for nodeset in nodesets:
-        # just the intersection
         nodesets_coverage = len([node for node in nodesets[nodeset] if node in network_nodes])
-        nodesets_p[nodeset] = round(m * np.log10(nodesets_coverage) + b, 4)
+        if nodesets_coverage > 0:
+            nodesets_p[nodeset] = round(m * np.log10(nodesets_coverage) + b, 4)
+        else:
+            nodesets_p[nodeset] = -1
     return nodesets_p
 
 

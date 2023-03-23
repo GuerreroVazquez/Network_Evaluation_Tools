@@ -60,13 +60,15 @@ def closed_form_network_propagation(network, binary_matrix, network_alpha, symme
     if verbose:
         print('Alpha:', network_alpha)
     # Separate network into connected components and calculate propagation values of each sub-sample on each
-	# connected component
-    subgraphs = list(nx.connected_component_subgraphs(network))
+    # connected component
+    # subgraphs = list(nx.connected_component_subgraphs(network))
+    subgraphs = list(network.subgraph(c) for c in nx.connected_components(network))
     # Initialize propagation results by propagating first subgraph
     subgraph = subgraphs[0]
     subgraph_nodes = list(subgraph.nodes)
     prop_data_node_order = list(subgraph_nodes)
-    binary_matrix_filt = np.array(binary_matrix.T.ix[subgraph_nodes].fillna(0).T)
+    binary_matrix_filt = np.array(binary_matrix.loc[subgraph_nodes, subgraph_nodes])
+    binary_matrix_filt = np.nan_to_num(binary_matrix_filt, nan=0)
     subgraph_norm = normalize_network(subgraph, symmetric_norm=symmetric_norm)
     prop_data_empty = np.zeros((binary_matrix_filt.shape[0], 1))
     prop_data = fast_random_walk(network_alpha, binary_matrix_filt, subgraph_norm, prop_data_empty)

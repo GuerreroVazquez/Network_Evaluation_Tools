@@ -76,7 +76,8 @@ def closed_form_network_propagation(network, binary_matrix, network_alpha, symme
     for subgraph in subgraphs[1:]:
         subgraph_nodes = list(subgraph.nodes)
         prop_data_node_order = prop_data_node_order + subgraph_nodes
-        binary_matrix_filt = np.array(binary_matrix.T.ix[subgraph_nodes].fillna(0).T)
+        binary_matrix_filt = np.array(binary_matrix.loc[subgraph_nodes, subgraph_nodes])
+        binary_matrix_filt = np.nan_to_num(binary_matrix_filt, nan=0)
         subgraph_norm = normalize_network(subgraph, symmetric_norm=symmetric_norm)
         prop_data = fast_random_walk(network_alpha, binary_matrix_filt, subgraph_norm, prop_data)
     # Return propagated result as dataframe

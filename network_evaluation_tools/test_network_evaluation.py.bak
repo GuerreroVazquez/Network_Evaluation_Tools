@@ -91,13 +91,13 @@ def test_construct_table():
                    ]
     null_AUPRCs_table = pd.concat(null_AUPRCs, axis=1)
     null_AUPRCs_table.columns = ['shuffNet' + repr(i + 1) for i in range(len(null_AUPRCs))]
-    print(null_AUPRCs_table)
+    print null_AUPRCs_table
     network_performance = nef.calculate_network_performance_score(pd.Series(AUPRC_values), null_AUPRCs_table,
                                                                   verbose=True,
                                                                   save_path='../Data/Network_Performance.csv')
     network_performance.name = 'Test Network'
     f_network_performance = network_performance  # .loc[lambda x: x > 0 | x < 0]
-    print(f_network_performance)
+    print f_network_performance
     network_perf_gain = nef.calculate_network_performance_gain(
         pd.Series(AUPRC_values), null_AUPRCs_table, verbose=True, save_path='../Data/Network_Performance_Gain.csv')
     network_perf_gain.name = 'Test Network'
@@ -140,7 +140,7 @@ def test_rank_among_other_networks():
     network_summary = {}
     network_summary['Nodes'] = int(len(network.nodes()))
     network_summary['Edges'] = int(len(network.edges()))
-    network_summary['Avg Node Degree'] = np.mean(list(dict(network.degree()).values()))
+    network_summary['Avg Node Degree'] = np.mean(dict(network.degree()).values())
     network_summary['Edge Density'] = 2 * network_summary['Edges'] / float(
         (network_summary['Nodes'] * (network_summary['Nodes'] - 1)))
     network_summary['Avg Network Performance Rank'] = network_performance_rankings.mean()
@@ -152,4 +152,4 @@ def test_rank_among_other_networks():
     for item in ['Nodes', 'Edges', 'Avg Node Degree', 'Edge Density', 'Avg Network Performance Rank',
                  'Avg Network Performance Rank, Rank',
                  'Avg Network Performance Gain Rank', 'Avg Network Performance Gain Rank, Rank']:
-        print(item + ':\t' + repr(network_summary[item]))
+        print item + ':\t' + repr(network_summary[item])

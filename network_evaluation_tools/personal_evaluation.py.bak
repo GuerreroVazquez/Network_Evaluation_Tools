@@ -27,15 +27,15 @@ def main(network_file='../Data/YoungvsOld_UP.csv', disease_file='../Data/DisGeNE
         shuffNet_AUPRCs = nef.small_network_AUPRC_wrapper(shuffNet_kernel, gene_sets, gene_sets_p, n=30, cores=4,
                                                           verbose=False)
         null_AUPRCs.append(shuffNet_AUPRCs)
-    averages = dict.fromkeys(list(gene_sets.keys()), 0)
+    averages = dict.fromkeys(gene_sets.keys(), 0)
     for element in null_AUPRCs:
-        for key, value in list(element.items()):
+        for key, value in element.items():
             averages[key] = averages[key] + value
-    for key, value in list(averages.items()):
+    for key, value in averages.items():
         averages[key] = averages[key] / len(null_AUPRCs)
 
-    for key, value in list(AUPRC_values.items()):
-        print(key, value, [random[key] for random in null_AUPRCs], averages[key])
+    for key, value in AUPRC_values.items():
+        print key, value, [random[key] for random in null_AUPRCs], averages[key]
 
 
 if __name__ == "__main__":

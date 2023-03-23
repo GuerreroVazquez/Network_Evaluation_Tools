@@ -116,9 +116,9 @@ options_descriptions = {
 if __name__ == "__main__":
     # Network Evaluation Setup Variables
     parser = argparse.ArgumentParser(description=_DESCRIPTION)
-    for name, help in list(arguments_descriptions.items()):
+    for name, help in arguments_descriptions.items():
         parser.add_argument(name, type=valid_infile, help=help)
-    for name, values in list(options_descriptions.items()):
+    for name, values in options_descriptions.items():
         parser.add_argument(name, type=valid_infile, help=help)
     # Network performance score calculations (with null networks)
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     else:
         genesets_p = {geneset: args.sample_p for geneset in genesets}
     if args.verbose:
-        print('Gene set sub-sample rates set')
+        print 'Gene set sub-sample rates set'
 
     # Calculate network kernel (also determine propagation constant if not set)
     kernel = nef.construct_prop_kernel(network, alpha=args.alpha, verbose=True)
@@ -196,7 +196,7 @@ if __name__ == "__main__":
                 gct.write_edgelist(shuffNet_edges, args.null_network_outdir + 'shuffNet_' + repr(i + 1) + '.txt',
                                    delimiter='\t', binary=True)
                 if args.verbose:
-                    print(('Shuffled Network', i + 1, 'written to file'))
+                    print('Shuffled Network', i + 1, 'written to file')
             # Construct null network kernel
             shuffNet_kernel = nef.construct_prop_kernel(shuffNet, alpha=args.alpha, verbose=False)
             # Calculate null network AUPRCs
@@ -213,7 +213,7 @@ if __name__ == "__main__":
         null_AUPRCs_table = pd.concat(null_AUPRCs, axis=1)
         null_AUPRCs_table.columns = ['shuffNet' + repr(i + 1) for i in range(len(null_AUPRCs))]
         if args.verbose:
-            print('All null network gene set AUPRCs calculated')
+            print 'All null network gene set AUPRCs calculated'
         # Save null network AUPRCs if save path is given
         if args.null_AUPRCs_save_path is not None:
             null_AUPRCs_table.to_csv(args.null_AUPRCs_save_path)

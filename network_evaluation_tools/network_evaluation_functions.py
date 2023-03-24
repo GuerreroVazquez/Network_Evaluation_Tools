@@ -32,7 +32,8 @@ def shuffle_network(network, max_tries_n=10, verbose=False):
     if verbose:
         # Evaluate Network Similarity
         shared_edges = len(set(network.edges()).intersection(set(shuff_net.edges())))
-        print('Network shuffled:', time.time() - shuff_time, 'seconds. Edge similarity:', shared_edges / float(edge_len))
+        print('Network shuffled:', time.time() - shuff_time, 'seconds. Edge similarity:',
+              shared_edges / float(edge_len))
     return shuff_net
 
 
@@ -92,7 +93,7 @@ def construct_prop_kernel(network, alpha=None, m=-0.02935302, b=0.74842057, verb
         alpha_val = alpha
     network_Fn = prop.closed_form_network_propagation(network, network_Fo, alpha_val, verbose=verbose)
     # make sure that the input network is represented as a square, symmetric adjacency matrix
-    network_Fn = network_Fn.ix[network_Fn.columns]
+    network_Fn = network_Fn.loc[:, network_Fn.columns]
     if verbose:
         print('Propagated network kernel constructed')
     if save_path is not None:

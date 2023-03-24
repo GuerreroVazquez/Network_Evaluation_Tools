@@ -116,7 +116,7 @@ def global_var_initializer(global_net_kernel):
 def calculate_small_network_AUPRC(params):
     """
 
-    :param params: list; parameters that the funtion will use, in order; node_set_name, node_set, p, n, bg, verbose
+    :param params: list; parameters that the function will use, in order; node_set_name, node_set, p, n, bg, verbose
     :return:
     """
     node_set_name, node_set, p, n, bg, verbose = params[0], params[1], params[2], params[3], params[4], params[5]
@@ -132,7 +132,7 @@ def calculate_small_network_AUPRC(params):
         sample = random.sample(intersect, sample_size)  # get node set sample
         intersect_non_sample = [node for node in intersect if node not in sample]  # nodes in intersect not in sample
         bg_non_sample = [node for node in bg if node not in sample]  # nodes in background gene list not in sample
-        bg_sample_sum = kernel.ix[sample][bg_non_sample].sum().sort_values(
+        bg_sample_sum = kernel.loc[:,sample][bg_non_sample].sum().sort_values(
             ascending=False)  # summed prop value for all nodes in background
         y_actual = pd.Series(0, index=bg_sample_sum.index, dtype=int)  # nodes sorted by mean prop value
         y_actual.ix[intersect_non_sample] += 1  # which nodes in sorted list are in intersect_non_sample

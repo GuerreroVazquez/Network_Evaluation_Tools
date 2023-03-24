@@ -182,3 +182,13 @@ def test_construct_prop_kernel():
     kernel = nef.construct_prop_kernel(_network, alpha=_alpha, verbose=True)
     assert isinstance(kernel, pd.DataFrame)
     assert kernel.shape == (len(_network.nodes), len(_network.nodes))  # Propagate using the random walk model
+
+
+def test_construct_prop_kernel_with_networkx():
+    _network = nx.read_gpickle(networkx_test_file)
+    _gene_sets = dit.load_node_sets(disease_test_file)
+    _gene_sets_p = nef.calculate_p(_network, _gene_sets)  # calculate the sub-sampling rate p for each node set
+    _alpha = prop.calculate_alpha(_network)  # Calculate the Network Alpha
+    kernel = nef.construct_prop_kernel(_network, alpha=_alpha, verbose=True)  # Propagate using the random walk model
+    assert isinstance(kernel, pd.DataFrame)
+    assert kernel.shape == (len(_network.nodes), len(_network.nodes))

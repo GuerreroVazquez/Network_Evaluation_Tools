@@ -73,7 +73,7 @@ def calculate_small_network_AUPRC(params):
 	node_set_name, node_set, p, n, bg, verbose = params[0], params[1], params[2], params[3], params[4], params[5]
 	runtime = time.time()
 	intersect = [nodes for nodes in node_set if nodes in kernel.index]
-	if intersect==[]:
+	if intersect==[] or np.isnan(p):
 		return [node_set_name, np.NAN]
 	AUPRCs = []
 	sample_size = int(round(p*len(intersect)))
@@ -115,7 +115,7 @@ def calculate_large_network_AUPRC(params):
 		recall.append(TP/float(TP+FN))					# Calculate recall ( TP / TP+FN ) and add point to curve
 	AUPRC = metrics.auc(recall, precision)				# Calculate Area Under Precision-Recall Curve (AUPRC)
 	if verbose:
-		print 'AUPRC Analysis for given node set:', geneset, 'complete:', round(time.time()-runtime, 2), 'seconds.'	
+		print 'AUPRC Analysis for given node set:', geneset, 'complete:', round(time.time()-runtime, 2), 'seconds.'
 	return [geneset, AUPRC]
 
 # Wrapper to calculate AUPRC of multiple node sets' recovery for small networks (<250k edges)
@@ -142,7 +142,7 @@ def small_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1,
 		# Close worker pool
 		pool.close()
 	# Construct AUPRC results
-	geneset_AUPRCs = {result[0]:result[1] for result in AUPRC_results}		
+	geneset_AUPRCs = {result[0]:result[1] for result in AUPRC_results}
 	AUPRCs_table = pd.Series(geneset_AUPRCs, name='AUPRC')
 	return AUPRCs_table
 
@@ -182,7 +182,7 @@ def large_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1,
 	for i in range(len(geneset_list)):
 		for j in range(n):
 			row = (i*n)+j
-			prop_result_full = pd.DataFrame(np.array((subsample_mat[row], y_actual_mat[row], prop_subsamples[row])), 
+			prop_result_full = pd.DataFrame(np.array((subsample_mat[row], y_actual_mat[row], prop_subsamples[row])),
 									   		index=['Sub-Sample', 'Non-Sample', 'Prop Score'], columns=net_kernel.columns).T
 			# Set background gene sets from a predefined gene set or all network genes
 			if bg is None:
@@ -206,7 +206,7 @@ def large_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1,
 		# Run the AUPRC analysis for each geneset
 		AUPRC_results = pool.map(calculate_large_network_AUPRC, AUPRC_Analysis_params)
 		# Close worker pool
-		pool.close()		  
+		pool.close()
 	# Construct AUPRC results
 	geneset_AUPRCs = pd.DataFrame(AUPRC_results, columns=['Gene Set', 'AUPRCs']).set_index('Gene Set', drop=True)
 	geneset_AUPRCs_merged = {geneset:geneset_AUPRCs.ix[geneset]['AUPRCs'].mean() for geneset in geneset_list}
@@ -214,7 +214,7 @@ def large_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1,
 	return AUPRCs_table
 
 # Wrapper to calculate AUPRCs of multiple node sets given network and node set files
-def AUPRC_Analysis_single(network_file, genesets_file, shuffle=False, kernel_file=None, prop_constant=None, 
+def AUPRC_Analysis_single(network_file, genesets_file, shuffle=False, kernel_file=None, prop_constant=None,
 						  subsample_iter=30, cores=1, geneset_background=False, save_path=None, verbose=True):
 	starttime = time.time()
 	# Load network
@@ -269,7 +269,7 @@ def AUPRC_Analysis_single(network_file, genesets_file, shuffle=False, kernel_fil
 	if save_path is not None:
 		AUPRC_table.to_csv(save_path)
 	if verbose:
-		print 'AUPRC table saved:', save_path		
+		print 'AUPRC table saved:', save_path
 	return AUPRC_table
 
 # The function will take all files containing the filename marker given to shuff_net_AUPRCs_fn and construct a single null AUPRCs table from them (in wd)
@@ -299,7 +299,7 @@ def calculate_network_performance_score(actual_net_AUPRCs, shuff_net_AUPRCs, ver
 	if save_path is not None:
 		AUPRC_ZNorm.to_csv(save_path)
 	if verbose:
-		print 'AUPRC values z-normalized'				
+		print 'AUPRC values z-normalized'
 	return AUPRC_ZNorm
 
 # Calculate relative gain of actual network AUPRC over median random network AUPRC performance for each gene set
@@ -309,7 +309,7 @@ def calculate_network_performance_gain(actual_net_AUPRCs, shuff_net_AUPRCs, verb
 	# Align data (only calculate for gene sets with full data on both actual networks and all shuffled networks)
 	genesets = sorted(list(set(actual_net_AUPRCs.index).intersection(set(shuff_net_AUPRCs.index))), key=lambda s: s.lower())
 	actual_net_AUPRCs = actual_net_AUPRCs.ix[genesets]
-	shuff_net_AUPRCs = shuff_net_AUPRCs.ix[genesets]	
+	shuff_net_AUPRCs = shuff_net_AUPRCs.ix[genesets]
 	# Compute relative gain
 	AUPRC_null_median = shuff_net_AUPRCs.median(axis=1)
 	AUPRC_gain = (actual_net_AUPRCs - AUPRC_null_median).divide(AUPRC_null_median)

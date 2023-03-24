@@ -73,6 +73,8 @@ def calculate_small_network_AUPRC(params):
 	node_set_name, node_set, p, n, bg, verbose = params[0], params[1], params[2], params[3], params[4], params[5]
 	runtime = time.time()
 	intersect = [nodes for nodes in node_set if nodes in kernel.index]
+	if intersect==[]:
+		return [node_set_name, np.NAN]
 	AUPRCs = []
 	sample_size = int(round(p*len(intersect)))
 	for i in range(n):																				# Number of times to run the sampling
@@ -89,8 +91,11 @@ def calculate_small_network_AUPRC(params):
 			TP += 1.0									   													# Calculate true positives found at this point in list
 			FN -= 1.0																					   	# Calculate false negatives found at this point in list
 			precision.append(TP/float(y_actual.ix[:node].shape[0]))										 	# Calculate precision ( TP / TP+FP ) and add point to curve
-			recall.append(TP/float(TP+FN))																  	# Calculate recall ( TP / TP+FN ) and add point to curve
-		AUPRCs.append(metrics.auc(recall, precision))												   		# Calculate Area Under Precision-Recall Curve (AUPRC)
+			recall.append(TP/float(TP+FN))
+		if len(recall) < 2 or len(precision) < 2:
+			AUPRCs.append(np.NAN)
+		else:
+			AUPRCs.append(metrics.auc(recall, precision))												   		# Calculate Area Under Precision-Recall Curve (AUPRC)
 	if verbose:
 		print 'AUPRC Analysis for given node set', '('+repr(len(intersect))+' nodes in network) complete:', round(time.time()-runtime, 2), 'seconds.'
 	return [node_set_name, np.mean(AUPRCs)]

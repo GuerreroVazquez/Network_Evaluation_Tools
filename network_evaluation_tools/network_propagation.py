@@ -43,7 +43,9 @@ def calculate_alpha(network, m=-0.02935302, b=0.74842057):
         return alpha_val
 
 
-# Closed form random-walk propagation (as seen in HotNet2) for each subgraph: Ft = (1-alpha)*Fo * (I-alpha*norm_adj_mat)^-1
+# Closed form random-walk propagation (as seen in HotNet2)
+# for each subgraph:
+# Ft = (1-alpha)*Fo * (I-alpha*norm_adj_mat)^-1
 # Concatenate to previous set of subgraphs
 def fast_random_walk(alpha, binary_mat, subgraph_norm, prop_data):
     term1 = (1 - alpha) * binary_mat
@@ -63,11 +65,15 @@ def closed_form_network_propagation(network, binary_matrix, network_alpha, symme
     # connected component
     # subgraphs = list(nx.connected_component_subgraphs(network))
     subgraphs = list(network.subgraph(c) for c in nx.connected_components(network))
+    subgraphs = [network.subgraph(c).copy() for c in nx.connected_components(network)]
     # Initialize propagation results by propagating first subgraph
     subgraph = subgraphs[0]
     subgraph_nodes = list(subgraph.nodes)
     prop_data_node_order = list(subgraph_nodes)
     binary_matrix_filt = np.array(binary_matrix.loc[subgraph_nodes, subgraph_nodes])
+    s = len(subgraph_nodes)
+    empty_rows = np.zeros((len(network.nodes) - s, s))
+    binary_matrix_filt = np.vstack((binary_matrix_filt, empty_rows))
     binary_matrix_filt = np.nan_to_num(binary_matrix_filt, nan=0)
     subgraph_norm = normalize_network(subgraph, symmetric_norm=symmetric_norm)
     prop_data_empty = np.zeros((binary_matrix_filt.shape[0], 1))
@@ -77,6 +83,9 @@ def closed_form_network_propagation(network, binary_matrix, network_alpha, symme
         subgraph_nodes = list(subgraph.nodes)
         prop_data_node_order = prop_data_node_order + subgraph_nodes
         binary_matrix_filt = np.array(binary_matrix.loc[subgraph_nodes, subgraph_nodes])
+        s = len(subgraph_nodes)
+        empty_rows = np.zeros((len(network.nodes) - s, s))
+        binary_matrix_filt = np.vstack((binary_matrix_filt, empty_rows))
         binary_matrix_filt = np.nan_to_num(binary_matrix_filt, nan=0)
         subgraph_norm = normalize_network(subgraph, symmetric_norm=symmetric_norm)
         prop_data = fast_random_walk(network_alpha, binary_matrix_filt, subgraph_norm, prop_data)

@@ -60,7 +60,10 @@ def calculate_p(network, nodesets, m=-0.18887257, b=0.64897403):
     for nodeset in nodesets:
         # just the intersection
         nodesets_coverage = len([node for node in nodesets[nodeset] if node in network_nodes])
-        nodesets_p[nodeset] = round(m * np.log10(nodesets_coverage) + b, 4)
+        if nodesets_coverage < 1:
+            nodesets_p[nodeset] = np.NAN
+        else:
+            nodesets_p[nodeset] = round(m * np.log10(nodesets_coverage) + b, 4)
     return nodesets_p
 
 
@@ -122,20 +125,18 @@ def calculate_small_network_AUPRC(params):
     node_set_name, node_set, p, n, bg, verbose = params[0], params[1], params[2], params[3], params[4], params[5]
     runtime = time.time()
     intersect = [nodes for nodes in node_set if nodes in kernel.index]
-    try:
-        AUPRCs = []
-        sample_size = int(round(p * len(intersect)))
-    except ValueError as ve:
-        sample_size = 0
-        return [node_set_name, -1]
+    if intersect == [] or np.isnan(p):
+        return [node_set_name, np.NAN]
+    AUPRCs = []
+    sample_size = int(round(p * len(intersect)))
     for i in range(n):  # Number of times to run the sampling
         sample = random.sample(intersect, sample_size)  # get node set sample
         intersect_non_sample = [node for node in intersect if node not in sample]  # nodes in intersect not in sample
         bg_non_sample = [node for node in bg if node not in sample]  # nodes in background gene list not in sample
-        bg_sample_sum = kernel.loc[:,sample][bg_non_sample].sum().sort_values(
+        bg_sample_sum = kernel.loc[sample][bg_non_sample].sum().sort_values(
             ascending=False)  # summed prop value for all nodes in background
         y_actual = pd.Series(0, index=bg_sample_sum.index, dtype=int)  # nodes sorted by mean prop value
-        y_actual.ix[intersect_non_sample] += 1  # which nodes in sorted list are in intersect_non_sample
+        y_actual.loc[intersect_non_sample] += 1  # which nodes in sorted list are in intersect_non_sample
         intersect_non_sample_sorted = y_actual[y_actual == 1].index  # intersect_non_sample sorted
         TP, FN = 0, len(intersect_non_sample_sorted)  # initialize precision and recall curves
         precision, recall = [1], [0]  # initialize true positives and false negatives
@@ -143,7 +144,7 @@ def calculate_small_network_AUPRC(params):
             TP += 1.0  # Calculate true positives found at this point in list
             FN -= 1.0  # Calculate false negatives found at this point in list
             precision.append(
-                TP / float(y_actual.ix[:node].shape[0]))  # Calculate precision ( TP / TP+FP ) and add point to curve
+                TP / float(y_actual.loc[:node].shape[0]))  # Calculate precision ( TP / TP+FP ) and add point to curve
             recall.append(TP / float(TP + FN))  # Calculate recall ( TP / TP+FN ) and add point to curve
         if len(recall) < 2 or len(precision) < 2:
             AUPRCs.append(-1)

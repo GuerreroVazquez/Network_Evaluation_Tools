@@ -82,3 +82,30 @@ def test_general_function():
     assert len(AUPRC_values) == len(_gene_sets), "The total of diseases on the Are under the curve is different than " \
                                                  "the genes evaluated"
     assert np.isclose(AUPRC_values['Carcinoma, Lewis Lung'], 0.51, rtol=0.1), "The auprc of Carcinome is different"
+
+def test_calculate_p():
+    """
+    This test checks that the genesets_p will have the same amount of elements than the genesets
+    :return:
+    """
+    _network = nx.read_gpickle(networkx_test_file)
+    genesets_p = nef.calculate_p(_network, genesets)
+    assert isinstance(genesets_p, dict)
+    assert len(genesets_p) == len(genesets)
+    pass
+
+
+def test_calculate_p_no_intersections():
+    """
+    This test checks that the genesets_p will have the same amount of elements than the genesets.
+    The value expected when there is no intersection is NAN, since it is the validation in the rest of
+    functions.
+    :return:
+    """
+    _network = nx.read_gpickle(networkx_test_file)
+    genesets['Carcinoma, Lewis Lung'] = {'a', 'aa'}
+    genesets_p = nef.calculate_p(_network, genesets)
+    assert isinstance(genesets_p, dict)
+    assert len(genesets_p) == len(genesets)
+    assert np.isnan(genesets_p['Carcinoma, Lewis Lung'])
+

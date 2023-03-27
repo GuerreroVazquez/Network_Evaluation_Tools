@@ -1,6 +1,7 @@
 import math
 import networkx as nx
 
+import networkx as nx
 import pytest
 from network_evaluation_tools import data_import_tools as dit
 from network_evaluation_tools import network_evaluation_functions as nef
@@ -12,6 +13,7 @@ import pickle
 network_test_file = '../Data/Networks/YoungvsOld_UP.csv'
 disease_test_file = '../Data/Evaluations/DisGeNET_genesets.txt'
 networkx_test_file = '../Data/NetworkCYJS/graph1_Young_Old_Fuzzy_95.pkl'
+networkx_test_file = '../Data/NetworkCYJS/graph1_Selected_genes_testing.pkl'
 
 AUPRC_values = {'Carcinoma, Lewis Lung': 0.5136054421768708, 'Fanconi Anemia': 0.5048184241212726,
                 'Endometrial adenocarcinoma': 0.5036461554318696, 'Follicular adenoma': -1.0,
@@ -33,6 +35,22 @@ genesets_p = {'Carcinoma, Lewis Lung': 0.5921,
               'Muscle Weakness': np.NAN}
 alpha = 0.684
 
+
+def test_construct_prop_kernel_with_csv():
+    _network = dit.load_network_file(network_test_file, delimiter=',', verbose=True)
+    _gene_sets = dit.load_node_sets(disease_test_file)
+    _gene_sets_p = nef.calculate_p(_network, _gene_sets)  # calculate the sub-sampling rate p for each node set
+    _alpha = prop.calculate_alpha(_network)  # Calculate the Network Alpha
+    kernel = nef.construct_prop_kernel(_network, alpha=_alpha, verbose=True)  # Propagate using the random walk model
+    assert isinstance(kernel, pd.DataFrame)
+def test_construct_prop_kernel_with_networkx():
+    _network_h = dit.load_network_file(network_test_file, delimiter=',', verbose=True)
+    _network = nx.read_gpickle(networkx_test_file)
+    _gene_sets = dit.load_node_sets(disease_test_file)
+    _gene_sets_p = nef.calculate_p(_network, _gene_sets)  # calculate the sub-sampling rate p for each node set
+    _alpha = prop.calculate_alpha(_network)  # Calculate the Network Alpha
+    kernel = nef.construct_prop_kernel(_network, alpha=_alpha, verbose=True)  # Propagate using the random walk model
+    assert isinstance(kernel, pd.DataFrame)
 
 def test_general_function():
     """

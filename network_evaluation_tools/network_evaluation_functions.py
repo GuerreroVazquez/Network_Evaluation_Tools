@@ -181,7 +181,8 @@ def small_network_AUPRC_wrapper(net_kernel, genesets, genesets_p, n=30, cores=1,
     """
 
     1. Divide the gene set into two subsets: a query set and a held-out set.
-    2. Compute the network propagation scores for all nodes in the network, using the propagation kernel and the gene expression values of the query set.
+    2. Compute the network propagation scores for all nodes in the network, using the propagation kernel and
+    the gene expression values of the query set.
     3. Evaluate the performance of the propagation scores in predicting the held-out gene set, using the AUPRC metric.
     4. Randomly shuffle the query and held-out sets, and repeat steps 1-3.
 

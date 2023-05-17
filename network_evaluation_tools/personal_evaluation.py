@@ -1,3 +1,5 @@
+import csv
+
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -7,13 +9,14 @@ from network_evaluation_tools import network_evaluation_functions as nef
 from network_evaluation_tools import network_propagation as prop
 
 
-def main(network_file='../Data/YoungvsOld_UP.csv', disease_file='../Data/DisGeNET_genesets.txt'):
+def main(network_file='../Data/Networks/YoungvsOld_UP.csv', disease_file='../Data/Evaluations/DisGeNET_genesets.txt', write_results='../Data/Results/YoungvsOld_UP.csv'):
     """
     This function will take a network_file that is the csv with the edges of the network, It can be obtained
     by exporting to file the edge table in cytoscape.
     The disease file is a tsv with the first column being the name of the disease and from there all the genes
     involved in that disease.
 
+    :param write_results:
     :param network_file: str Name of the file with the network edges. First column should be the nodes sources.
     :param disease_file: str Name of the disease file, each line should be a disease and their genes.
     :return: A dictionary with all the diseases and their AUPRC values on that network.
@@ -39,7 +42,11 @@ def main(network_file='../Data/YoungvsOld_UP.csv', disease_file='../Data/DisGeNE
         averages[key] = averages[key] / len(null_AUPRCs)
 
     for key, value in list(AUPRC_values.items()):
-        print(key, value, [random[key] for random in null_AUPRCs], averages[key])
+        row = key, value, [random[key] for random in null_AUPRCs], averages[key]
+        with open(write_results, mode='a') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerow(row)
+        print(row)
 
 
 def shuffle_network(network, alpha, genesets, genesets_p, n=30, cores=4):
